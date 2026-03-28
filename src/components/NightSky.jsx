@@ -64,10 +64,23 @@ const BG_STARS = [
   { id: 'bg40', x: 748, y: 362, o: 0.22 },
 ]
 
-export default function NightSky({ allocatedStars, onConstellationClick }) {
+export default function NightSky({ allocatedStars, onConstellationClick, completingConstellationId }) {
   const [animatingStars, setAnimatingStars] = useState(new Set())
   const [hoveredId, setHoveredId] = useState(null)
+  const [drawingId, setDrawingId] = useState(null)
+  const [drawPhase, setDrawPhase] = useState(0)
   const prevAllocatedRef = useRef(new Set())
+
+  useEffect(() => {
+    if (!completingConstellationId) return
+    const constellation = CONSTELLATIONS.find(c => c.id === completingConstellationId)
+    setDrawingId(completingConstellationId)
+    setDrawPhase(1)
+    const raf = requestAnimationFrame(() => setDrawPhase(2))
+    const totalMs = (constellation?.lines.length ?? 0) * 150 + 600
+    const timer = setTimeout(() => { setDrawingId(null); setDrawPhase(0) }, totalMs)
+    return () => { cancelAnimationFrame(raf); clearTimeout(timer) }
+  }, [completingConstellationId])
 
   useEffect(() => {
     const newlyFilled = []
@@ -130,6 +143,8 @@ export default function NightSky({ allocatedStars, onConstellationClick }) {
               const a = constellation.stars.find(s => s.id === aId)
               const b = constellation.stars.find(s => s.id === bId)
               if (!a || !b) return null
+              const lineLength = Math.ceil(Math.hypot(b.x - a.x, b.y - a.y))
+              const isDrawing = drawingId === constellation.id
               return (
                 <line
                   key={i}
@@ -137,7 +152,13 @@ export default function NightSky({ allocatedStars, onConstellationClick }) {
                   stroke={isComplete ? '#FFD700' : '#ffffff'}
                   strokeOpacity={isHovered ? 0.55 : isComplete ? 0.25 : 0.12}
                   strokeWidth={isHovered ? 1 : 0.5}
-                  style={{ transition: 'stroke-opacity 0.2s, stroke-width 0.2s' }}
+                  style={{
+                    strokeDasharray: isDrawing ? lineLength : undefined,
+                    strokeDashoffset: isDrawing ? (drawPhase === 2 ? 0 : lineLength) : undefined,
+                    transition: isDrawing && drawPhase === 2
+                      ? `stroke-dashoffset 0.5s ease-out ${i * 0.15}s, stroke-opacity 0.2s, stroke-width 0.2s`
+                      : 'stroke-opacity 0.2s, stroke-width 0.2s',
+                  }}
                 />
               )
             })}

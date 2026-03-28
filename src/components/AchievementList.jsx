@@ -3,7 +3,7 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-export default function AchievementList({ achievements, categories }) {
+export default function AchievementList({ achievements, categories, onDelete }) {
   const categoryMap = Object.fromEntries(categories.map(c => [c.id, c]))
   const sorted = [...achievements].reverse()
 
@@ -24,7 +24,7 @@ export default function AchievementList({ achievements, categories }) {
             return (
               <li
                 key={a.id}
-                className="flex items-start gap-3 bg-white rounded-xl px-4 py-3 border border-gray-100 shadow-sm"
+                className="group flex items-start gap-3 bg-white rounded-xl px-4 py-3 border border-gray-100 shadow-sm"
               >
                 <span className="text-2xl leading-none mt-0.5">{cat?.emoji ?? '⭐'}</span>
                 <div className="flex-1 min-w-0">
@@ -36,6 +36,13 @@ export default function AchievementList({ achievements, categories }) {
                     )}
                   </p>
                 </div>
+                <button
+                  onClick={() => onDelete(a.id)}
+                  className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 text-lg leading-none flex-shrink-0 mt-0.5 transition-opacity"
+                  aria-label="Delete achievement"
+                >
+                  ×
+                </button>
               </li>
             )
           })}

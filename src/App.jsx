@@ -16,7 +16,7 @@ import ConstellationInfoModal from './components/ConstellationInfoModal'
 import AchievementProgressToast from './components/AchievementProgressToast'
 
 export default function App() {
-  const { achievements, categories, addAchievement, addCategory, clearAll } = useAchievements()
+  const { achievements, categories, addAchievement, addCategory, deleteAchievement, clearAll } = useAchievements()
   const [completedConstellation, setCompletedConstellation] = useState(null)
   const [infoConstellation, setInfoConstellation] = useState(null)
   const [toast, setToast] = useState(null)
@@ -69,7 +69,11 @@ export default function App() {
     <div className="flex flex-col lg:flex-row h-screen overflow-hidden bg-[#0a0e1a]">
       {/* Sky panel */}
       <div className="relative h-56 lg:h-auto lg:flex-1 flex-shrink-0">
-        <NightSky allocatedStars={allocatedStars} onConstellationClick={setInfoConstellation} />
+        <NightSky
+          allocatedStars={allocatedStars}
+          onConstellationClick={setInfoConstellation}
+          completingConstellationId={completedConstellation?.id}
+        />
         <StatsBar achievements={achievements} allocatedStars={allocatedStars} />
       </div>
 
@@ -83,6 +87,7 @@ export default function App() {
         <AchievementList
           achievements={achievements}
           categories={categories}
+          onDelete={deleteAchievement}
         />
       </div>
 

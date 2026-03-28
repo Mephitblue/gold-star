@@ -26,6 +26,10 @@ export function useAchievements() {
     setState(prev => ({ ...prev, categories: [...prev.categories, category] }))
   }
 
+  function deleteAchievement(id) {
+    setState(prev => ({ ...prev, achievements: prev.achievements.filter(a => a.id !== id) }))
+  }
+
   function clearAll() {
     setState({ achievements: [], categories: [...DEFAULT_CATEGORIES] })
   }
@@ -35,6 +39,7 @@ export function useAchievements() {
     categories: state.categories,
     addAchievement,
     addCategory,
+    deleteAchievement,
     clearAll,
   }
 }
