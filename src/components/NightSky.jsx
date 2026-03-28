@@ -2,6 +2,16 @@ import { useState, useEffect, useRef } from 'react'
 import { CONSTELLATIONS } from '../data/constellations'
 import House from './House'
 
+function starPoints(cx, cy, outerR, innerR) {
+  const pts = []
+  for (let i = 0; i < 10; i++) {
+    const angle = (i * Math.PI) / 5 - Math.PI / 2
+    const r = i % 2 === 0 ? outerR : innerR
+    pts.push(`${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`)
+  }
+  return pts.join(' ')
+}
+
 const BG_STARS = [
   { id: 'bg1',  x: 42,  y: 42,  o: 0.30 },
   { id: 'bg2',  x: 78,  y: 25,  o: 0.20 },
@@ -81,7 +91,7 @@ export default function NightSky({ allocatedStars }) {
 
       {/* Decorative background stars */}
       {BG_STARS.map(s => (
-        <circle key={s.id} cx={s.x} cy={s.y} r="1" fill="#ffffff" opacity={s.o} />
+        <polygon key={s.id} points={starPoints(s.x, s.y, 1.8, 0.7)} fill="#ffffff" opacity={s.o} />
       ))}
 
       {/* Constellation connector lines */}
@@ -110,22 +120,18 @@ export default function NightSky({ allocatedStars }) {
           const animating = animatingStars.has(star.id)
           if (earned) {
             return (
-              <circle
+              <polygon
                 key={star.id}
-                cx={star.x}
-                cy={star.y}
-                r="4"
+                points={starPoints(star.x, star.y, 6, 2.4)}
                 fill="#FFD700"
                 className={animating ? 'star-fill' : ''}
               />
             )
           }
           return (
-            <circle
+            <polygon
               key={star.id}
-              cx={star.x}
-              cy={star.y}
-              r="3"
+              points={starPoints(star.x, star.y, 5, 2)}
               fill="none"
               stroke="#ffffff"
               strokeOpacity="0.3"
