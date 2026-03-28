@@ -26,10 +26,15 @@ export function useAchievements() {
     setState(prev => ({ ...prev, categories: [...prev.categories, category] }))
   }
 
+  function clearAll() {
+    setState({ achievements: [], categories: [...DEFAULT_CATEGORIES] })
+  }
+
   return {
     achievements: state.achievements,
     categories: state.categories,
     addAchievement,
     addCategory,
+    clearAll,
   }
 }

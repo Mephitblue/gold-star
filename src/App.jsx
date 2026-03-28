@@ -13,11 +13,18 @@ import ConstellationModal from './components/ConstellationModal'
 import AchievementProgressToast from './components/AchievementProgressToast'
 
 export default function App() {
-  const { achievements, categories, addAchievement, addCategory } = useAchievements()
+  const { achievements, categories, addAchievement, addCategory, clearAll } = useAchievements()
   const [completedConstellation, setCompletedConstellation] = useState(null)
   const [toast, setToast] = useState(null)
   const toastTimerRef = useRef(null)
   const prevLengthRef = useRef(achievements.length)
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('reset')) {
+      clearAll()
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [])
 
   const allocatedStars = getAllocatedStars(achievements, CONSTELLATIONS)
 
