@@ -12,6 +12,15 @@ function starPoints(cx, cy, outerR, innerR) {
   return pts.join(' ')
 }
 
+function labelPos(constellation) {
+  const xs = constellation.stars.map(s => s.x)
+  const ys = constellation.stars.map(s => s.y)
+  const cx = Math.min(Math.max(xs.reduce((a, b) => a + b, 0) / xs.length, 30), 770)
+  const minY = Math.min(...ys)
+  const maxY = Math.max(...ys)
+  return { x: cx, y: minY < 25 ? maxY + 18 : minY - 10 }
+}
+
 const BG_STARS = [
   { id: 'bg1',  x: 42,  y: 42,  o: 0.30 },
   { id: 'bg2',  x: 78,  y: 25,  o: 0.20 },
@@ -57,6 +66,7 @@ const BG_STARS = [
 
 export default function NightSky({ allocatedStars, onConstellationClick }) {
   const [animatingStars, setAnimatingStars] = useState(new Set())
+  const [hoveredId, setHoveredId] = useState(null)
   const prevAllocatedRef = useRef(new Set())
 
   useEffect(() => {
@@ -75,10 +85,6 @@ export default function NightSky({ allocatedStars, onConstellationClick }) {
     prevAllocatedRef.current = new Set(allocatedStars)
   }, [allocatedStars])
 
-  // Build a map of star id -> constellation for connector lines
-  const starMap = {}
-  CONSTELLATIONS.forEach(c => c.stars.forEach(s => { starMap[s.id] = s }))
-
   return (
     <svg
       viewBox="0 0 800 500"
@@ -89,62 +95,97 @@ export default function NightSky({ allocatedStars, onConstellationClick }) {
       {/* Background */}
       <rect width="800" height="500" fill="#0a0e1a" />
 
-      {/* Decorative background stars */}
-      {BG_STARS.map(s => (
-        <polygon key={s.id} points={starPoints(s.x, s.y, 1.8, 0.7)} fill="#ffffff" opacity={s.o} />
+      {/* Twinkling background stars */}
+      {BG_STARS.map((s, i) => (
+        <polygon
+          key={s.id}
+          points={starPoints(s.x, s.y, 1.8, 0.7)}
+          fill="#ffffff"
+          className="twinkle"
+          style={{
+            '--base-o': s.o,
+            animationDelay: `${(i * 0.37) % 4}s`,
+            animationDuration: `${2.5 + (i * 0.13) % 2}s`,
+          }}
+        />
       ))}
 
-      {/* Constellation connector lines */}
-      {CONSTELLATIONS.map(constellation =>
-        constellation.lines.map(([aId, bId], i) => {
-          const a = starMap[aId]
-          const b = starMap[bId]
-          if (!a || !b) return null
-          return (
-            <line
-              key={`${constellation.id}-line-${i}`}
-              x1={a.x} y1={a.y}
-              x2={b.x} y2={b.y}
-              stroke="#ffffff"
-              strokeOpacity="0.12"
-              strokeWidth="0.5"
-            />
-          )
-        })
-      )}
+      {/* Constellations — lines, stars, and label all in one group per constellation */}
+      {CONSTELLATIONS.map(constellation => {
+        const isHovered = hoveredId === constellation.id
+        const isComplete = constellation.stars.every(s => allocatedStars.has(s.id))
+        const hasAny = constellation.stars.some(s => allocatedStars.has(s.id))
+        const lp = labelPos(constellation)
 
-      {/* Constellation stars */}
-      {CONSTELLATIONS.map(constellation => (
-        <g
-          key={constellation.id}
-          onClick={() => onConstellationClick && onConstellationClick(constellation)}
-          style={{ cursor: 'pointer' }}
-        >
-          {constellation.stars.map(star => {
-            const earned = allocatedStars.has(star.id)
-            const animating = animatingStars.has(star.id)
-            return (
-              <g key={star.id}>
-                <circle cx={star.x} cy={star.y} r="12" fill="transparent" />
-                {earned ? (
-                  <polygon
-                    points={starPoints(star.x, star.y, 6, 2.4)}
-                    fill="#FFD700"
-                    className={animating ? 'star-fill' : ''}
-                  />
-                ) : (
-                  <polygon
-                    points={starPoints(star.x, star.y, 5, 2)}
-                    fill="none"
-                    stroke="#ffffff"
-                    strokeOpacity="0.3"
-                  />
-                )}
-              </g>
-            )
-          })}
-        </g>
-      ))}
+        return (
+          <g
+            key={constellation.id}
+            onClick={() => onConstellationClick && onConstellationClick(constellation)}
+            onMouseEnter={() => setHoveredId(constellation.id)}
+            onMouseLeave={() => setHoveredId(null)}
+            style={{ cursor: 'pointer' }}
+          >
+            {/* Connector lines */}
+            {constellation.lines.map(([aId, bId], i) => {
+              const a = constellation.stars.find(s => s.id === aId)
+              const b = constellation.stars.find(s => s.id === bId)
+              if (!a || !b) return null
+              return (
+                <line
+                  key={i}
+                  x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+                  stroke={isComplete ? '#FFD700' : '#ffffff'}
+                  strokeOpacity={isHovered ? 0.55 : isComplete ? 0.25 : 0.12}
+                  strokeWidth={isHovered ? 1 : 0.5}
+                  style={{ transition: 'stroke-opacity 0.2s, stroke-width 0.2s' }}
+                />
+              )
+            })}
+
+            {/* Stars */}
+            {constellation.stars.map(star => {
+              const earned = allocatedStars.has(star.id)
+              const animating = animatingStars.has(star.id)
+              return (
+                <g key={star.id}>
+                  <circle cx={star.x} cy={star.y} r="12" fill="transparent" />
+                  {earned ? (
+                    <polygon
+                      points={starPoints(star.x, star.y, 6, 2.4)}
+                      fill="#FFD700"
+                      className={animating ? 'star-fill' : ''}
+                      style={isHovered ? { filter: 'drop-shadow(0 0 5px #FFD700)' } : {}}
+                    />
+                  ) : (
+                    <polygon
+                      points={starPoints(star.x, star.y, 5, 2)}
+                      fill={isHovered ? 'rgba(255,215,0,0.12)' : 'none'}
+                      stroke="#ffffff"
+                      strokeOpacity={isHovered ? 0.65 : 0.3}
+                      style={{ transition: 'stroke-opacity 0.2s' }}
+                    />
+                  )}
+                </g>
+              )
+            })}
+
+            {/* Constellation name label */}
+            <text
+              x={lp.x}
+              y={lp.y}
+              textAnchor="middle"
+              fill={isComplete ? '#FFD700' : '#ffffff'}
+              fillOpacity={isHovered ? 1 : isComplete ? 0.65 : hasAny ? 0.3 : 0.18}
+              fontSize="7.5"
+              fontFamily="system-ui, sans-serif"
+              letterSpacing="0.8"
+              style={{ transition: 'fill-opacity 0.2s', userSelect: 'none', pointerEvents: 'none' }}
+            >
+              {constellation.name.toUpperCase()}
+            </text>
+          </g>
+        )
+      })}
 
       {/* House silhouette */}
       <House />

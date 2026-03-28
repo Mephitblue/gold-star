@@ -8,6 +8,7 @@ import {
   getActiveConstellation,
 } from './data/constellations'
 import NightSky from './components/NightSky'
+import StatsBar from './components/StatsBar'
 import AchievementForm from './components/AchievementForm'
 import AchievementList from './components/AchievementList'
 import ConstellationModal from './components/ConstellationModal'
@@ -67,8 +68,9 @@ export default function App() {
   return (
     <div className="flex flex-col lg:flex-row h-screen overflow-hidden bg-[#0a0e1a]">
       {/* Sky panel */}
-      <div className="h-56 lg:h-auto lg:flex-1 flex-shrink-0">
+      <div className="relative h-56 lg:h-auto lg:flex-1 flex-shrink-0">
         <NightSky allocatedStars={allocatedStars} onConstellationClick={setInfoConstellation} />
+        <StatsBar achievements={achievements} allocatedStars={allocatedStars} />
       </div>
 
       {/* Right panel */}

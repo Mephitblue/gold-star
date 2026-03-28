@@ -12,3 +12,12 @@
   animation: starFill 0.5s ease-out forwards;
   transform-origin: center;
 }
+
+@keyframes twinkle {
+  0%, 100% { opacity: var(--base-o); }
+  50%       { opacity: calc(var(--base-o) * 0.15); }
+}
+
+.twinkle {
+  animation: twinkle ease-in-out infinite;
+}
