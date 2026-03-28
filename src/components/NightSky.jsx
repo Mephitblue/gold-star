@@ -97,17 +97,17 @@ export default function NightSky({ allocatedStars, onConstellationClick }) {
 
       {/* Twinkling background stars */}
       {BG_STARS.map((s, i) => (
-        <polygon
-          key={s.id}
-          points={starPoints(s.x, s.y, 1.8, 0.7)}
-          fill="#ffffff"
-          className="twinkle"
-          style={{
-            '--base-o': s.o,
-            animationDelay: `${(i * 0.37) % 4}s`,
-            animationDuration: `${2.5 + (i * 0.13) % 2}s`,
-          }}
-        />
+        <g key={s.id} opacity={s.o}>
+          <polygon
+            points={starPoints(s.x, s.y, 1.8, 0.7)}
+            fill="#ffffff"
+            className="twinkle"
+            style={{
+              animationDelay: `${(i * 0.37) % 4}s`,
+              animationDuration: `${2.5 + (i * 0.13) % 2}s`,
+            }}
+          />
+        </g>
       ))}
 
       {/* Constellations — lines, stars, and label all in one group per constellation */}

@@ -14,10 +14,13 @@
 }
 
 @keyframes twinkle {
-  0%, 100% { opacity: var(--base-o); }
-  50%       { opacity: calc(var(--base-o) * 0.15); }
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.1; }
 }
 
 .twinkle {
-  animation: twinkle ease-in-out infinite;
+  animation-name: twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-duration: 3s;
 }
