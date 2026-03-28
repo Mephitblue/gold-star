@@ -106,6 +106,20 @@ export const CONSTELLATIONS = [
   },
 ]
 
+export function getStarAchievementMap(achievements, constellations) {
+  const map = {}
+  let idx = 0
+  for (const constellation of constellations) {
+    for (const star of constellation.stars) {
+      if (idx < achievements.length) {
+        map[star.id] = achievements[idx]
+        idx++
+      }
+    }
+  }
+  return map
+}
+
 export function getAllocatedStars(achievements, constellations) {
   const filled = new Set()
   let remaining = achievements.length

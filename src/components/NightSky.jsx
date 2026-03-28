@@ -55,7 +55,7 @@ const BG_STARS = [
   { id: 'bg40', x: 748, y: 362, o: 0.22 },
 ]
 
-export default function NightSky({ allocatedStars }) {
+export default function NightSky({ allocatedStars, onConstellationClick }) {
   const [animatingStars, setAnimatingStars] = useState(new Set())
   const prevAllocatedRef = useRef(new Set())
 
@@ -114,31 +114,37 @@ export default function NightSky({ allocatedStars }) {
       )}
 
       {/* Constellation stars */}
-      {CONSTELLATIONS.map(constellation =>
-        constellation.stars.map(star => {
-          const earned = allocatedStars.has(star.id)
-          const animating = animatingStars.has(star.id)
-          if (earned) {
+      {CONSTELLATIONS.map(constellation => (
+        <g
+          key={constellation.id}
+          onClick={() => onConstellationClick && onConstellationClick(constellation)}
+          style={{ cursor: 'pointer' }}
+        >
+          {constellation.stars.map(star => {
+            const earned = allocatedStars.has(star.id)
+            const animating = animatingStars.has(star.id)
             return (
-              <polygon
-                key={star.id}
-                points={starPoints(star.x, star.y, 6, 2.4)}
-                fill="#FFD700"
-                className={animating ? 'star-fill' : ''}
-              />
+              <g key={star.id}>
+                <circle cx={star.x} cy={star.y} r="12" fill="transparent" />
+                {earned ? (
+                  <polygon
+                    points={starPoints(star.x, star.y, 6, 2.4)}
+                    fill="#FFD700"
+                    className={animating ? 'star-fill' : ''}
+                  />
+                ) : (
+                  <polygon
+                    points={starPoints(star.x, star.y, 5, 2)}
+                    fill="none"
+                    stroke="#ffffff"
+                    strokeOpacity="0.3"
+                  />
+                )}
+              </g>
             )
-          }
-          return (
-            <polygon
-              key={star.id}
-              points={starPoints(star.x, star.y, 5, 2)}
-              fill="none"
-              stroke="#ffffff"
-              strokeOpacity="0.3"
-            />
-          )
-        })
-      )}
+          })}
+        </g>
+      ))}
 
       {/* House silhouette */}
       <House />

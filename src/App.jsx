@@ -3,6 +3,7 @@ import { useAchievements } from './hooks/useAchievements'
 import {
   CONSTELLATIONS,
   getAllocatedStars,
+  getStarAchievementMap,
   isConstellationComplete,
   getActiveConstellation,
 } from './data/constellations'
@@ -10,11 +11,13 @@ import NightSky from './components/NightSky'
 import AchievementForm from './components/AchievementForm'
 import AchievementList from './components/AchievementList'
 import ConstellationModal from './components/ConstellationModal'
+import ConstellationInfoModal from './components/ConstellationInfoModal'
 import AchievementProgressToast from './components/AchievementProgressToast'
 
 export default function App() {
   const { achievements, categories, addAchievement, addCategory, clearAll } = useAchievements()
   const [completedConstellation, setCompletedConstellation] = useState(null)
+  const [infoConstellation, setInfoConstellation] = useState(null)
   const [toast, setToast] = useState(null)
   const toastTimerRef = useRef(null)
   const prevLengthRef = useRef(achievements.length)
@@ -27,6 +30,7 @@ export default function App() {
   }, [])
 
   const allocatedStars = getAllocatedStars(achievements, CONSTELLATIONS)
+  const starAchievementMap = getStarAchievementMap(achievements, CONSTELLATIONS)
 
   useEffect(() => {
     if (achievements.length <= prevLengthRef.current) {
@@ -64,7 +68,7 @@ export default function App() {
     <div className="flex flex-col lg:flex-row h-screen overflow-hidden bg-[#0a0e1a]">
       {/* Sky panel */}
       <div className="h-56 lg:h-auto lg:flex-1 flex-shrink-0">
-        <NightSky allocatedStars={allocatedStars} />
+        <NightSky allocatedStars={allocatedStars} onConstellationClick={setInfoConstellation} />
       </div>
 
       {/* Right panel */}
@@ -84,6 +88,14 @@ export default function App() {
         <ConstellationModal
           constellation={completedConstellation}
           onDismiss={() => setCompletedConstellation(null)}
+        />
+      )}
+
+      {infoConstellation && !completedConstellation && (
+        <ConstellationInfoModal
+          constellation={infoConstellation}
+          starAchievementMap={starAchievementMap}
+          onDismiss={() => setInfoConstellation(null)}
         />
       )}
 
