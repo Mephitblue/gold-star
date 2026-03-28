@@ -1,5 +1,36 @@
+import confetti from 'canvas-confetti'
+import { useEffect } from 'react'
+
+function playChime() {
+  const ctx = new AudioContext()
+  const notes = [523, 659, 784, 1047] // C5–E5–G5–C6
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.frequency.value = freq
+    osc.type = 'sine'
+    gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.12)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.4)
+    osc.start(ctx.currentTime + i * 0.12)
+    osc.stop(ctx.currentTime + i * 0.12 + 0.4)
+  })
+}
+
 export default function ConstellationModal({ constellation, onDismiss }) {
   const starCount = Math.min(constellation.stars.length, 10)
+
+  useEffect(() => {
+    confetti({
+      particleCount: 120,
+      spread: 80,
+      origin: { y: 0.5 },
+      colors: ['#FFD700', '#ffffff', '#fffacd'],
+      shapes: ['star'],
+    })
+    playChime()
+  }, [])
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
